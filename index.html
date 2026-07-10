@@ -179,7 +179,7 @@
             let escapeCount = 0;
 
             hayirBtn.addEventListener('mouseover', () => {
-                if (escapeCount < 2) {
+                if (escapeCount < 1) {
                     // İlk kaçışta butonu sayfa geneline serbest bırak
                     hayirBtn.style.position = 'fixed';
                     
@@ -194,7 +194,7 @@
                     
                     escapeCount++;
                 } else {
-                    // 2 defa kaçtıktan sonra kaybol
+                    // 1 defa kaçtıktan sonra kaybol
                     hayirBtn.style.display = 'none';
                 }
             });
@@ -358,8 +358,8 @@
                 // Samet Kırmızı (Kalbin altına, parlayan)
                 ...getTextParticles('Samet', 'rgba(255, 33, 33, 0.9)', canvas.height * 0.65, Math.min(canvas.width/9, 90), true),
                 // Eylül Beyaz (Samet'in altına, parlayan)
-                ...getTextParticles('Ecrin', 'rgba(255, 255, 255, 0.9)', canvas.height * 0.82, Math.min(canvas.width/9, 90))
-            ];
+                ...getTextParticles('Ecrin', 'rgba(255, 260, 255, 0.9)', canvas.height * 0.82, Math.min(canvas.width/9, 90))
+            ]
 
             // Animasyon Döngüsü
             function animate() {
