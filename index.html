@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sana Bir Mesajım Var</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Arka plan resmi ve blurlama */
+        #bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('929.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px) brightness(0.4);
+            z-index: 1;
+            transition: opacity 1s ease;
+        }
+
+        /* İçerik Kutuları */
+        .container {
+            position: relative;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 77, 77, 0.3);
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #step1 { display: flex; }
+
+        h1 { margin-bottom: 30px; font-size: 2.5em; letter-spacing: 2px; }
+
+        /* Uzun yazı alanı */
+        .message {
+            font-size: 1.15em;
+            line-height: 1.6;
+            text-align: justify;
+            margin-bottom: 30px;
+            max-height: 55vh;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+
+        .message::-webkit-scrollbar { width: 8px; }
+        .message::-webkit-scrollbar-thumb { background: #ff4d4d; border-radius: 4px; }
+
+        .question-box {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .question-box h3 { margin-top: 0; margin-bottom: 25px; font-size: 1.5em; }
+
+        /* Butonlar */
+        .btn-group {
+            position: relative;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        button {
+            padding: 12px 35px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .btn-evet {
+            background: linear-gradient(45deg, #ff0844 0%, #ffb199 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 8, 68, 0.4);
+            z-index: 2;
+        }
+        .btn-evet:hover { transform: scale(1.05); }
+
+        .btn-hayir {
+            background: #444;
+            color: white;
+            z-index: 50;
+        }
+
+        /* Animasyon Alanı */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            display: none;
+            background-color: #050505; /* Parçacıkların parlaması için siyah arka plan */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="bg-image"></div>
+
+    <div id="step1" class="container">
+        <h1>Barışalım mı?</h1>
+        <div class="btn-group">
+            <button id="evet1" class="btn-evet">Evet</button>
+            <button id="hayir1" class="btn-hayir">Hayır</button>
+        </div>
+    </div>
+
+    <div id="step2" class="container">
+        <div class="message">
+            Bazen insan elindekinin değerini kaybedince daha iyi anlıyor. Ben de bunu yaşadım. Aramızda yaşananlar için pişmanım ve keşke zamanı geri alabilsem diyorum. Ama geçmişi değiştiremem, sadece bugün hissettiklerimi sana anlatabilirim.<br><br>
+            Seni unutamadım. Geçen her gün bana senin ne kadar değerli olduğunu daha çok gösterdi. Seni geri istememin sebebi yalnız kalmak değil; kalbimin hâlâ seni seçmesi.<br><br>
+            Senden hemen bir cevap ya da beni affetmeni beklemiyorum. Sadece şunu bilmeni istiyorum: Eğer bana bir şans daha verirsen, bu kez sevgimi sözlerle değil, davranışlarımla göstermeye çalışacağım.<br><br>
+            Belki yeniden başlayabiliriz, belki de başlayamayız. Karar tamamen senin. Ama seni gerçekten sevdiğimi ve seni kaybetmenin bana çok şey öğrettiğini bilmeni istedim.<br><br>
+            Çünkü bazı insanlar unutulmaz... Sen de benim için onlardan birisin. ❤️
+        </div>
+        
+        <div class="question-box">
+            <h3>Bir şans verebilir misin?</h3>
+            <div class="btn-group">
+                <button id="evet2" class="btn-evet">Evet</button>
+                <button id="hayir2" class="btn-hayir">Hayır</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <script>
+        // --- Buton Kaçma Mantığı ---
+        function setupEscapingButton(hayirId, evetId, nextStepCallback) {
+            const hayirBtn = document.getElementById(hayirId);
+            const evetBtn = document.getElementById(evetId);
+            let escapeCount = 0;
+
+            hayirBtn.addEventListener('mouseover', () => {
+                if (escapeCount < 2) {
+                    // İlk kaçışta butonu sayfa geneline serbest bırak
+                    hayirBtn.style.position = 'fixed';
+                    
+                    const maxX = window.innerWidth - hayirBtn.offsetWidth - 20;
+                    const maxY = window.innerHeight - hayirBtn.offsetHeight - 20;
+                    
+                    const x = Math.max(20, Math.random() * maxX);
+                    const y = Math.max(20, Math.random() * maxY);
+                    
+                    hayirBtn.style.left = x + 'px';
+                    hayirBtn.style.top = y + 'px';
+                    
+                    escapeCount++;
+                } else {
+                    // 2 defa kaçtıktan sonra kaybol
+                    hayirBtn.style.display = 'none';
+                }
+            });
+
+            evetBtn.addEventListener('click', nextStepCallback);
+        }
+
+        // Adım geçişleri
+        setupEscapingButton('hayir1', 'evet1', () => {
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'flex';
+        });
+
+        setupEscapingButton('hayir2', 'evet2', () => {
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('bg-image').style.opacity = '0'; // Arka planı karart
+            setTimeout(() => {
+                startParticleAnimation();
+            }, 500);
+        });
+
+        // --- Parçacık (Kum/Toz) Animasyonu Sistemi ---
+        function startParticleAnimation() {
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.style.display = 'block';
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let particles = [];
+            
+            // Parçacık Sınıfı (Fizik tabanlı)
+            class Particle {
+                constructor(targetX, targetY, color, sizeMultiplier = 1) {
+                    // Ekran dışından rastgele yerlerden başlasınlar
+                    if (Math.random() > 0.5) {
+                        this.x = Math.random() > 0.5 ? -100 : canvas.width + 100;
+                        this.y = Math.random() * canvas.height;
+                    } else {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() > 0.5 ? -100 : canvas.height + 100;
+                    }
+                    
+                    this.targetX = targetX;
+                    this.targetY = targetY;
+                    this.color = color;
+                    
+                    // Kum tanesi boyutları
+                    this.size = (Math.random() * 1.5 + 0.5) * sizeMultiplier;
+                    
+                    this.vx = 0;
+                    this.vy = 0;
+                    
+                    // Yayınlanma ve sürtünme fiziği (Organik toplanma hissi için)
+                    this.friction = Math.random() * 0.04 + 0.90; // 0.90 - 0.94
+                    this.springFactor = Math.random() * 0.015 + 0.005; 
+                }
+
+                update() {
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    
+                    this.vx += dx * this.springFactor;
+                    this.vy += dy * this.springFactor;
+                    
+                    this.vx *= this.friction;
+                    this.vy *= this.friction;
+                    
+                    this.x += this.vx;
+                    this.y += this.vy;
+                }
+
+                draw() {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Kalp şeklini oluşturan noktaları hesapla
+            function getHeartParticles() {
+                const targets = [];
+                const scale = Math.min(canvas.width, canvas.height) / 60;
+                const offsetX = canvas.width / 2;
+                const offsetY = canvas.height * 0.35; // Üst kısıma yerleştir
+
+                for (let t = 0; t < Math.PI * 2; t += 0.02) {
+                    const x = 16 * Math.pow(Math.sin(t), 3);
+                    const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                    
+                    const px = offsetX + x * scale;
+                    const py = offsetY + y * scale;
+
+                    // Çizgiyi kalınlaştırmak için etrafına ekstra kum taneleri ekle
+                    for(let i=0; i<8; i++) {
+                        targets.push(new Particle(
+                            px + (Math.random() - 0.5) * 20, 
+                            py + (Math.random() - 0.5) * 20, 
+                            `rgba(255, 30, 80, ${Math.random() * 0.8 + 0.2})`,
+                            1.5
+                        ));
+                    }
+                }
+                return targets;
+            }
+
+            // Yazıları kum tanelerine çevirme fonksiyonu
+            function getTextParticles(text, color, yPosition, fontSize) {
+                const targets = [];
+                const tempCanvas = document.createElement('canvas');
+                const tCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+
+                tCtx.fillStyle = '#FFFFFF';
+                // Font ayarı
+                tCtx.font = `bold ${fontSize}px "Segoe UI", Arial`;
+                tCtx.textAlign = 'center';
+                tCtx.textBaseline = 'middle';
+                tCtx.fillText(text, canvas.width / 2, yPosition);
+
+                const pixels = tCtx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+                // Pixelleri tarayıp sadece dolu olanları kum tanesine çevir
+                for (let y = 0; y < canvas.height; y += 3) { // yoğunluk ayarı (3px'de bir)
+                    for (let x = 0; x < canvas.width; x += 3) {
+                        const index = (y * canvas.width + x) * 4;
+                        if (pixels[index + 3] > 128) { // Eğer pixel şeffaf değilse
+                            // Kum efekti için hafif rastgele sapmalar ekle
+                            targets.push(new Particle(
+                                x + (Math.random() - 0.5) * 3, 
+                                y + (Math.random() - 0.5) * 3, 
+                                color
+                            ));
+                        }
+                    }
+                }
+                return targets;
+            }
+
+            // Hedefleri oluştur
+            particles = [
+                ...getHeartParticles(),
+                // Samet Kırmızı (Kalbin altına)
+                ...getTextParticles('Samet', '#ff3333', canvas.height * 0.65, Math.min(canvas.width/10, 80)),
+                // Ecrin Beyaz (Samet'in altına)
+                ...getTextParticles('Ecrin', '#ffffff', canvas.height * 0.80, Math.min(canvas.width/10, 80))
+            ];
+
+            // Animasyon Döngüsü
+            function animate() {
+                // Arkada hafif iz bırakarak (motion blur) silme
+                ctx.fillStyle = 'rgba(5, 5, 5, 0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            // Ekran boyutu değişirse canvası güncelle
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+
+            animate();
+        }
+    </script>
+</body>
+</html>
