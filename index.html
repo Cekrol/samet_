@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sana Bir Mesajım Var</title>
+    <title>Özel Bir Mesaj...</title>
+    <!-- El yazısı fontunu yükle -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
         body, html {
             margin: 0;
@@ -29,6 +31,7 @@
             background-image: url('929.jpg');
             background-size: cover;
             background-position: center;
+            /* İlk başta blur ve hafif karartma */
             filter: blur(8px) brightness(0.4);
             z-index: 1;
             transition: opacity 1s ease;
@@ -134,8 +137,10 @@
 </head>
 <body>
 
+    <!-- Arka plan -->
     <div id="bg-image"></div>
 
+    <!-- 1. Aşama -->
     <div id="step1" class="container">
         <h1>Barışalım mı?</h1>
         <div class="btn-group">
@@ -144,6 +149,7 @@
         </div>
     </div>
 
+    <!-- 2. Aşama -->
     <div id="step2" class="container">
         <div class="message">
             Bazen insan elindekinin değerini kaybedince daha iyi anlıyor. Ben de bunu yaşadım. Aramızda yaşananlar için pişmanım ve keşke zamanı geri alabilsem diyorum. Ama geçmişi değiştiremem, sadece bugün hissettiklerimi sana anlatabilirim.<br><br>
@@ -162,6 +168,7 @@
         </div>
     </div>
 
+    <!-- Parçacık (Kum) Animasyonu -->
     <canvas id="particleCanvas"></canvas>
 
     <script>
@@ -209,7 +216,7 @@
             }, 500);
         });
 
-        // --- Parçacık (Kum/Toz) Animasyonu Sistemi ---
+        // --- Geliştirilmiş Parçacık (Kum/Toz) Animasyonu Sistemi ---
         function startParticleAnimation() {
             const canvas = document.getElementById('particleCanvas');
             const ctx = canvas.getContext('2d');
@@ -220,9 +227,9 @@
 
             let particles = [];
             
-            // Parçacık Sınıfı (Fizik tabanlı)
+            // Parçacık Sınıfı (Fizik tabanlı) - Geliştirilmiş
             class Particle {
-                constructor(targetX, targetY, color, sizeMultiplier = 1) {
+                constructor(targetX, targetY, color, sizeMultiplier = 1, bloomOpacity = 0.5) {
                     // Ekran dışından rastgele yerlerden başlasınlar
                     if (Math.random() > 0.5) {
                         this.x = Math.random() > 0.5 ? -100 : canvas.width + 100;
@@ -235,9 +242,10 @@
                     this.targetX = targetX;
                     this.targetY = targetY;
                     this.color = color;
+                    this.bloomOpacity = bloomOpacity;
                     
-                    // Kum tanesi boyutları
-                    this.size = (Math.random() * 1.5 + 0.5) * sizeMultiplier;
+                    // Kum tanesi boyutları (biraz büyütüldü)
+                    this.size = (Math.random() * 2 + 1) * sizeMultiplier;
                     
                     this.vx = 0;
                     this.vy = 0;
@@ -263,20 +271,30 @@
 
                 draw() {
                     ctx.fillStyle = this.color;
+                    
+                    // Parıltı (Bloom) efekti ekle
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = `rgba(${this.color.slice(5, -1)}, ${this.bloomOpacity})`;
+                    
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                     ctx.fill();
+                    
+                    // Diğer çizimler için parıltıyı sıfırla
+                    ctx.shadowBlur = 0;
                 }
             }
 
-            // Kalp şeklini oluşturan noktaları hesapla
+            // Geliştirilmiş Kalp şeklini oluşturan noktaları hesapla (Daha Büyük ve Yoğun)
             function getHeartParticles() {
                 const targets = [];
-                const scale = Math.min(canvas.width, canvas.height) / 60;
+                // Kalbi büyütmek için scale artırıldı
+                const scale = Math.min(canvas.width, canvas.height) / 45;
                 const offsetX = canvas.width / 2;
                 const offsetY = canvas.height * 0.35; // Üst kısıma yerleştir
 
-                for (let t = 0; t < Math.PI * 2; t += 0.02) {
+                // Daha yoğun kalp için t artışı azaltıldı (0.01)
+                for (let t = 0; t < Math.PI * 2; t += 0.01) {
                     const x = 16 * Math.pow(Math.sin(t), 3);
                     const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
                     
@@ -284,45 +302,49 @@
                     const py = offsetY + y * scale;
 
                     // Çizgiyi kalınlaştırmak için etrafına ekstra kum taneleri ekle
-                    for(let i=0; i<8; i++) {
+                    for(let i=0; i<12; i++) {
                         targets.push(new Particle(
-                            px + (Math.random() - 0.5) * 20, 
-                            py + (Math.random() - 0.5) * 20, 
-                            `rgba(255, 30, 80, ${Math.random() * 0.8 + 0.2})`,
-                            1.5
+                            px + (Math.random() - 0.5) * 25, 
+                            py + (Math.random() - 0.5) * 25, 
+                            `rgba(255, 30, 80, ${Math.random() * 0.8 + 0.2})`, // Kırmızı-pembe parlayan kum
+                            1.8, // Kum boyutu çarpanı
+                            1.0 // Parıltı opaklığı
                         ));
                     }
                 }
                 return targets;
             }
 
-            // Yazıları kum tanelerine çevirme fonksiyonu
-            function getTextParticles(text, color, yPosition, fontSize) {
+            // Yazıları kum tanelerine çevirme fonksiyonu (El Yazısı ve Parlak)
+            function getTextParticles(text, color, yPosition, fontSize, isRedGlow = false) {
                 const targets = [];
                 const tempCanvas = document.createElement('canvas');
                 const tCtx = tempCanvas.getContext('2d');
                 tempCanvas.width = canvas.width;
                 tempCanvas.height = canvas.height;
 
-                tCtx.fillStyle = '#FFFFFF';
-                // Font ayarı
-                tCtx.font = `bold ${fontSize}px "Segoe UI", Arial`;
+                // Font ayarı (El yazısı Great Vibes)
+                tCtx.font = `bold ${fontSize}px "Great Vibes", cursive`;
                 tCtx.textAlign = 'center';
                 tCtx.textBaseline = 'middle';
+                tCtx.fillStyle = '#FFFFFF';
                 tCtx.fillText(text, canvas.width / 2, yPosition);
 
                 const pixels = tCtx.getImageData(0, 0, canvas.width, canvas.height).data;
 
                 // Pixelleri tarayıp sadece dolu olanları kum tanesine çevir
-                for (let y = 0; y < canvas.height; y += 3) { // yoğunluk ayarı (3px'de bir)
-                    for (let x = 0; x < canvas.width; x += 3) {
+                // Kum yoğunluğu artırıldı (2px'de bir)
+                for (let y = 0; y < canvas.height; y += 2) {
+                    for (let x = 0; x < canvas.width; x += 2) {
                         const index = (y * canvas.width + x) * 4;
                         if (pixels[index + 3] > 128) { // Eğer pixel şeffaf değilse
                             // Kum efekti için hafif rastgele sapmalar ekle
                             targets.push(new Particle(
-                                x + (Math.random() - 0.5) * 3, 
-                                y + (Math.random() - 0.5) * 3, 
-                                color
+                                x + (Math.random() - 0.5) * 4, 
+                                y + (Math.random() - 0.5) * 4, 
+                                color,
+                                1.0, // Kum boyutu çarpanı
+                                isRedGlow ? 1.0 : 0.7 // Kırmızı parıltı Samet için daha güçlü
                             ));
                         }
                     }
@@ -330,13 +352,13 @@
                 return targets;
             }
 
-            // Hedefleri oluştur
+            // Hedefleri oluştur (Daha parlak renkler)
             particles = [
                 ...getHeartParticles(),
-                // Samet Kırmızı (Kalbin altına)
-                ...getTextParticles('Samet', '#ff3333', canvas.height * 0.65, Math.min(canvas.width/10, 80)),
-                // Ecrin Beyaz (Samet'in altına)
-                ...getTextParticles('Ecrin', '#ffffff', canvas.height * 0.80, Math.min(canvas.width/10, 80))
+                // Samet Kırmızı (Kalbin altına, parlayan)
+                ...getTextParticles('Samet', 'rgba(255, 33, 33, 0.9)', canvas.height * 0.65, Math.min(canvas.width/9, 90), true),
+                // Eylül Beyaz (Samet'in altına, parlayan)
+                ...getTextParticles('Eylül', 'rgba(255, 255, 255, 0.9)', canvas.height * 0.82, Math.min(canvas.width/9, 90))
             ];
 
             // Animasyon Döngüsü
